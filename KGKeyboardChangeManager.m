@@ -118,25 +118,27 @@
     [userInfo[UIKeyboardAnimationDurationUserInfoKey] getValue:&animationDuration];
     [userInfo[UIKeyboardFrameEndUserInfoKey] getValue:&keyboardEndFrame];
 
-    // The keyboard frame is in portrait space
-    CGRect newKeyboardEndFrame = CGRectZero;    
-    UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-    if(interfaceOrientation == UIInterfaceOrientationPortrait){
-        newKeyboardEndFrame = keyboardEndFrame;
-        if(!show){
-            newKeyboardEndFrame.origin.y = MIN(newKeyboardEndFrame.origin.y, CGRectGetHeight([[UIScreen mainScreen] bounds]));
+    CGRect newKeyboardEndFrame = keyboardEndFrame;
+
+    if(!SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")){
+        // The keyboard frame is in portrait space
+        UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+        if(interfaceOrientation == UIInterfaceOrientationPortrait){
+            if(!show){
+                newKeyboardEndFrame.origin.y = MIN(newKeyboardEndFrame.origin.y, CGRectGetHeight([[UIScreen mainScreen] bounds]));
+            }
+        }else if(interfaceOrientation == UIInterfaceOrientationLandscapeLeft){
+            newKeyboardEndFrame.origin.y = CGRectGetMinX(keyboardEndFrame);
+            newKeyboardEndFrame.size.width = CGRectGetHeight(keyboardEndFrame);
+            newKeyboardEndFrame.size.height = CGRectGetWidth(keyboardEndFrame);
+        }else if(interfaceOrientation == UIInterfaceOrientationLandscapeRight){
+            newKeyboardEndFrame.size.width = CGRectGetHeight(keyboardEndFrame);
+            newKeyboardEndFrame.size.height = CGRectGetWidth(keyboardEndFrame);
+            newKeyboardEndFrame.origin.y = CGRectGetWidth([[UIScreen mainScreen] bounds])-CGRectGetMaxX(keyboardEndFrame);
+        }else if(interfaceOrientation == UIInterfaceOrientationPortraitUpsideDown){
+            newKeyboardEndFrame = keyboardEndFrame;
+            newKeyboardEndFrame.origin.y = CGRectGetHeight([[UIScreen mainScreen] bounds])-CGRectGetMaxY(keyboardEndFrame);
         }
-    }else if(interfaceOrientation == UIInterfaceOrientationLandscapeLeft){
-        newKeyboardEndFrame.origin.y = CGRectGetMinX(keyboardEndFrame);
-        newKeyboardEndFrame.size.width = CGRectGetHeight(keyboardEndFrame);
-        newKeyboardEndFrame.size.height = CGRectGetWidth(keyboardEndFrame);
-    }else if(interfaceOrientation == UIInterfaceOrientationLandscapeRight){
-        newKeyboardEndFrame.size.width = CGRectGetHeight(keyboardEndFrame);
-        newKeyboardEndFrame.size.height = CGRectGetWidth(keyboardEndFrame);
-        newKeyboardEndFrame.origin.y = CGRectGetWidth([[UIScreen mainScreen] bounds])-CGRectGetMaxX(keyboardEndFrame);
-    }else if(interfaceOrientation == UIInterfaceOrientationPortraitUpsideDown){
-        newKeyboardEndFrame = keyboardEndFrame;
-        newKeyboardEndFrame.origin.y = CGRectGetHeight([[UIScreen mainScreen] bounds])-CGRectGetMaxY(keyboardEndFrame);
     }
 
     // Call the appropriate callback
