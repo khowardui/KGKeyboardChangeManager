@@ -26,6 +26,10 @@
     return sharedManager;
 }
 
++ (BOOL)isSystemVersionEqualToOrGreaterThan:(NSString *)version{
+    return [[[UIDevice currentDevice] systemVersion] compare:version options:NSNumericSearch] != NSOrderedAscending;
+}
+
 - (instancetype)init{
     if(!(self = [super init])){
         return nil;
@@ -35,7 +39,7 @@
     self.orientationCallbacks = [NSMutableDictionary dictionary];
 
     [[NSNotificationCenter defaultCenter]
-     addObserver:self selector:@selector(keyboardWillShown:)
+     addObserver:self selector:@selector(keyboardWillShow:)
      name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter]
      addObserver:self selector:@selector(keyboardWillHide:)
@@ -46,6 +50,13 @@
     [[NSNotificationCenter defaultCenter]
      addObserver:self selector:@selector(keyboardDidHide:)
      name:UIKeyboardDidHideNotification object:nil];
+    [[NSNotificationCenter defaultCenter]
+     addObserver:self selector:@selector(keyboardWillChangeFrame:)
+     name:UIKeyboardWillChangeFrameNotification object:nil];
+    [[NSNotificationCenter defaultCenter]
+     addObserver:self selector:@selector(keyboardDidChangeFrame:)
+     name:UIKeyboardDidChangeFrameNotification object:nil];
+    
     [[NSNotificationCenter defaultCenter]
      addObserver:self selector:@selector(orientationDidChange:)
      name:UIDeviceOrientationDidChangeNotification object:nil];
@@ -120,7 +131,7 @@
 
     CGRect newKeyboardEndFrame = keyboardEndFrame;
 
-    if(!SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")){
+    if(![KGKeyboardChangeManager isSystemVersionEqualToOrGreaterThan:(@"8.0")]){
         // The keyboard frame is in portrait space
         UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
         if(interfaceOrientation == UIInterfaceOrientationPortrait){
@@ -165,13 +176,41 @@
     self.keyboardShowing = NO;
 }
 
-- (void)keyboardWillShown:(NSNotification *)notification{
+- (void)keyboardWillShow:(NSNotification *)notification{
     [self keyboardDidChange:notification show:YES];
 }
 
 - (void)keyboardDidShow:(NSNotification *)notification{
     self.keyboardShowing = YES;
     self.orientationChange = NO;
+}
+
+- (void)keyboardWillChangeFrame:(NSNotification *)notification{
+    if(![KGKeyboardChangeManager isSystemVersionEqualToOrGreaterThan:@"8.0"]){
+        return;
+    }
+    
+    NSDictionary *userInfo = [notification userInfo];
+    CGRect keyboardEndFrame;
+    [userInfo[UIKeyboardFrameEndUserInfoKey] getValue:&keyboardEndFrame];
+
+    if(CGRectGetMaxY(keyboardEndFrame) < CGRectGetMaxY([UIScreen mainScreen].bounds)){
+        [self keyboardDidChange:notification show:NO];
+    }
+}
+
+- (void)keyboardDidChangeFrame:(NSNotification *)notification{
+    if(![KGKeyboardChangeManager isSystemVersionEqualToOrGreaterThan:@"8.0"]){
+        return;
+    }
+    
+    NSDictionary *userInfo = [notification userInfo];
+    CGRect keyboardEndFrame;
+    [userInfo[UIKeyboardFrameEndUserInfoKey] getValue:&keyboardEndFrame];
+    
+    if(CGRectGetMaxY(keyboardEndFrame) < CGRectGetMaxY([UIScreen mainScreen].bounds)){
+        self.keyboardShowing = NO;
+    }
 }
 
 #pragma mark - Animation helper methods
