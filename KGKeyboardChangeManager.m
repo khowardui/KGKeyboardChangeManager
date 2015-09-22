@@ -131,7 +131,7 @@
 
     CGRect newKeyboardEndFrame = keyboardEndFrame;
 
-#ifndef SIGNING_ACTION_EXTENSION
+#ifndef KGKEYBOARD_APP_EXTENSIONS
     if(![KGKeyboardChangeManager isSystemVersionEqualToOrGreaterThan:(@"8.0")]){
         // The keyboard frame is in portrait space
         UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
