@@ -14,6 +14,7 @@ typedef void (^KGKeyboardChangeManagerKeyboardOrientationBlock)(CGRect keyboardR
 typedef void (^KGKeyboardChangeManagerKeyboardChangedBlock)
 (BOOL show, CGRect keyboardRect, NSTimeInterval animationDuration, UIViewAnimationCurve animationCurve);
 
+@property (nonatomic, readonly) BOOL keyboardWillShow;
 @property (nonatomic, readonly, getter=isKeyboardShowing) BOOL keyboardShowing;
 
 + (KGKeyboardChangeManager *)sharedManager;

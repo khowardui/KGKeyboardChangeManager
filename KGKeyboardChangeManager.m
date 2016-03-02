@@ -11,6 +11,7 @@
 @interface KGKeyboardChangeManager()
 @property (strong, atomic) NSMutableDictionary *changeCallbacks;
 @property (strong, atomic) NSMutableDictionary *orientationCallbacks;
+@property (nonatomic, readwrite, getter=keyboardWillShow) BOOL keyboardWillShow;
 @property (nonatomic, readwrite, getter=isKeyboardShowing) BOOL keyboardShowing;
 @property (nonatomic) BOOL orientationChange, didBecomeActive;
 @end
@@ -179,10 +180,12 @@
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification{
+    self.keyboardWillShow = YES;
     [self keyboardDidChange:notification show:YES];
 }
 
 - (void)keyboardDidShow:(NSNotification *)notification{
+    self.keyboardWillShow = NO;
     self.keyboardShowing = YES;
     self.orientationChange = NO;
 }
